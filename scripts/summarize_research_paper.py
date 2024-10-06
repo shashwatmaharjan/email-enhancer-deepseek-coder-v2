@@ -132,7 +132,7 @@ def main():
 
     # Step 5: Prepare a structured prompt for summarizing the extracted text
     final_prompt = (
-        f"Summarize the following text under these sections:\n\n"
+        f"Summarize the following research paper under these sections:\n\n"
         f"1. Introduction and Background\n"
         f"2. Methodology\n"
         f"3. Results\n"
