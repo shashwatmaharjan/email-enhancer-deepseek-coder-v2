@@ -3,3 +3,6 @@
 
 # Environment
 /env
+
+# Sensitive files
+/custom_URLs.txt
