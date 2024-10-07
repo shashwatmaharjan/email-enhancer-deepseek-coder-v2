@@ -55,7 +55,7 @@ def prepare_email_template(email_body):
         "{email_body}\n\n"
         "Thank you for your time.\n\n"
         "Best regards,\n"
-        "Shashwat Maharjan"
+        "[Your Name]"
     )
 
     # Insert the user's email body into the template
@@ -166,7 +166,7 @@ def main():
     """
 
     # Step 0: Greet the user
-    print("Hi Shashwat! I'm here to help you compose and polish your emails.\n")
+    print("Hi! I'm here to help you compose and polish your emails.\n")
 
     # Step 1: Create a temporary input file
     input_email_path = get_input_email_path()
