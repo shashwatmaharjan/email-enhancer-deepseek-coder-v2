@@ -166,7 +166,9 @@ def main():
     """
 
     # Step 0: Greet the user
-    print("Hi! I'm here to help you compose and polish your emails.\n")
+    # Use figlet to create a large ASCII art banner
+    subprocess.call(['figlet', '-f', 'isometric3', 'jarvis'])
+    print("Hi, I'm Jarvis! I'm here to help you compose and polish your emails.\n")
 
     # Step 1: Create a temporary input file
     input_email_path = get_input_email_path()
