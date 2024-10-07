@@ -36,7 +36,35 @@ To install Python 3.9 using Homebrew, use the following command:
 brew install python@3.9
 ```
 
-### Step 3: Create and Activate a Virtual Environment
+### Step 3: Install `ollama`
+
+You will need to install the `ollama` CLI to run the Llama model. Follow these steps to install and set it up:
+
+1. Run the following command to install `ollama`:
+
+   ```bash
+   brew install ollama
+   ```
+
+2. Once installed, verify that `ollama` is working by checking the version:
+
+   ```bash
+   ollama --version
+   ```
+
+### Step 4: Download the `gemma:7b` Model
+
+After setting up `ollama`, download the `gemma:7b` model using the following command:
+
+```bash
+ollama pull gemma:7b
+```
+
+For more information about this model, you can visit the official [Gemma model page on Ollama's website](https://ollama.com/library/gemma).
+
+This will download and prepare the model for use in your script.
+
+### Step 5: Create and Activate a Virtual Environment (Optional but Recommended)
 
 To keep your dependencies organized, it is recommended to create a Python virtual environment. Run the following commands:
 
@@ -53,23 +81,11 @@ source venv/bin/activate  # For Unix/macOS
 venv\Scripts\activate  # For Windows
 ```
 
-### Step 4: Install Required Python Libraries
-
-Make sure you install the required Python packages by running the following command in your virtual environment:
-
-```bash
-pip install -r requirements.txt
-```
-
-### Step 5: Install `ollama`
-
-Install `ollama` to integrate with the Llama model by following the instructions from the [ollama website](https://ollama.ai/).
-
 ## Usage
 
 1. Clone or download this repository to your local machine.
 2. Open the terminal and navigate to the project directory.
-3. Activate your virtual environment (see Step 3).
+3. Activate your virtual environment (if you created one).
 4. Run the script:
 
    ```bash
@@ -83,7 +99,7 @@ Install `ollama` to integrate with the Llama model by following the instructions
 ## Example Output
 
 ```
-Hi Shashwat! I'm here to help you compose and polish your emails.
+Hi! I'm here to help you compose and polish your emails.
 
 Processing your email to enhance it for grammar, clarity, and professionalism...
 ---------------------------------------------------------------------------------------------
