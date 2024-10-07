@@ -130,8 +130,6 @@ def open_text_editor(file_path):
     """
 
     try:
-        # Notify the user that the text editor is launching
-        print("Launching the text editor...")
 
         # Open the file using the nano text editor
         subprocess.call(['nano', file_path])
