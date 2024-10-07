@@ -82,7 +82,7 @@ def prepare_final_prompt(email_content):
     return final_prompt
 
 
-def run_llama_model(prompt, model_name="llama3.2"):
+def run_llama_model(prompt, model_name="gemma:7b"):
 
     """
     Run the Llama model using the provided prompt and return the output.
