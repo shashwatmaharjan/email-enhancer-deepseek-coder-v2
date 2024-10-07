@@ -211,7 +211,7 @@ def main():
     output = run_llama_model(final_prompt)
 
     # Step 7: Display the output
-    print("\nHere's your polished email:\n")
+    print("----------------------------------------------------------------------------------------------------")
     print(output)
 
     # Step 8: Clear the contents of 'input.txt'
