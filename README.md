@@ -105,19 +105,6 @@ python main.py
 7. The final email draft will be displayed in the terminal, ready for you to copy into your email client.
 
 ## Example Output
-
-\`\`\`bash
-    ___          ___           ___                                    ___     
-   /  /\        /  /\         /  /\          ___        ___          /  /\    
-  /  /:/       /  /::\       /  /::\        /__/\      /  /\        /  /:/_   
- /__/::\      /  /:/\:\     /  /:/\:\       \  \:\    /  /:/       /  /:/ /\  
- \__\/\:\    /  /:/~/::\   /  /:/~/:/        \  \:\  /__/::\      /  /:/ /::\ 
-    \  \:\  /__/:/ /:/\:\ /__/:/ /:/___  ___  \__\:\ \__\/\:\__  /__/:/ /:/\:\
-     \__\:\ \  \:\/:/__\/ \  \:\/:::::/ /__/\ |  |:|    \  \:\/\ \  \:\/:/~/:/
-     /  /:/  \  \::/       \  \::/~~~~  \  \:\|  |:|     \__\::/  \  \::/ /:/ 
-    /__/:/    \  \:\        \  \:\       \  \:\__|:|     /__/:/    \__\/ /:/  
-    \__\/      \  \:\        \  \:\       \__\::::/      \__\/       /__/:/   
-                \__\/         \__\/           ~~~~                   \__\/    
 Hi, I'm Jarvis! I'm here to help you compose and polish your emails.
 
 Processing your email to enhance it for grammar, clarity, and professionalism...
