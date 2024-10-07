@@ -1,160 +1,271 @@
-# Importing necessary libraries
 import os
-import PyPDF2
 import subprocess
+
 import tkinter as tk
 from tkinter import filedialog
 
-# Function to extract text from a PDF file
+import json
+import re
+import PyPDF2
+
 def extract_text_from_pdf(pdf_file_path):
 
     """
-    Extracts text from a PDF file.
+    Extract text from a PDF file.
 
     Args:
-        pdf_file_path (str): Path to the PDF file.
+        pdf_file_path (str): The path to the PDF file.
 
     Returns:
         str: The extracted text from the PDF.
     """
 
-    # Open the PDF file in binary mode (reading it as raw bytes)
+    # Open the PDF file in binary read mode
     with open(pdf_file_path, 'rb') as file:
-        # Initialize a PDF reader to read the PDF content
+
+        # Create a PDF reader object
         pdf_reader = PyPDF2.PdfReader(file)
-        
-        # Initialize an empty string to store the text extracted from the PDF
+
         extracted_text = ""
-        
-        # Loop through each page of the PDF and extract its text
+
+        # Iterate over all pages in the PDF
         for page in pdf_reader.pages:
-            extracted_text += page.extract_text()  # Concatenate the extracted text from each page
-    
-    # Return the fully extracted text from the PDF
+
+            # Extract text from the current page and append to extracted_text
+            extracted_text += page.extract_text()
+
+    # Return the combined extracted text from all pages
     return extracted_text
 
-# Function to split the extracted text into smaller sections
-def split_text_into_chunks(text, chunk_size=1024):
 
-    """
-    Splits a large text into smaller sections to avoid exceeding token limits.
-
-    Args:
-        text (str): The full text to be split.
-        chunk_size (int): The size of each section in characters (default: 1024).
-
-    Returns:
-        list: A list of text sections.
-    """
-
-    # Use list comprehension to divide the text into sections of a specified size
-    return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
-
-# Function to send a section of text to the Llama model using a subprocess
 def send_chunk_to_llama_model(text_chunk):
 
     """
-    Sends a section of text to the Llama model using subprocess.
+    Send a text chunk to the Llama model for processing.
 
     Args:
-        text_chunk (str): A section of text to be sent.
+        text_chunk (str): The text to be processed.
 
     Returns:
-        str: The response from the Llama model for the text section.
+        str: The model's output or an error message.
     """
 
-    # Define the command to run the Llama model (in this case, "ollama run llama3")
-    command = "ollama run llama3"
-    
-    # Run the command using subprocess and pass the section of text as input
-    process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
-    # Capture the output (result) and error from the subprocess
-    output, error = process.communicate(input=text_chunk.encode('utf-8'))
-    
-    # Check if the subprocess was successful (return code 0 indicates success)
-    if process.returncode == 0:
-        return output.decode('utf-8')  # Return the model's output as a decoded string
-    else:
-        return f"Error: {error.decode('utf-8')}"  # Return any error message if the subprocess fails
+    # Command to run the Llama model (assumes 'ollama' is installed and configured)
+    command = "ollama run llama3:70b"
 
-# Function to open a file dialog and let the user select a PDF file
+    # Start the subprocess to run the Llama model
+    process = subprocess.Popen(
+        command,
+        shell=True,  # Using shell=True to run the command in the shell
+        stdin=subprocess.PIPE,  # Provide input to the process via stdin
+        stdout=subprocess.PIPE,  # Capture the output from stdout
+        stderr=subprocess.PIPE   # Capture any errors from stderr
+    )
+
+    # Communicate with the process: send the text chunk and get the output and error
+    output, error = process.communicate(input=text_chunk.encode('utf-8'))
+
+    # Check if the process completed successfully
+    if process.returncode == 0:
+
+        # Return the model's output decoded from bytes to string
+        return output.decode('utf-8')
+    
+    else:
+
+        # Return the error message decoded from bytes to string
+        return f"Error: {error.decode('utf-8')}"
+
+
+def extract_json_from_response(response):
+
+    """
+    Attempt to extract JSON content from the model's response.
+
+    Args:
+        response (str): The raw response from the model.
+
+    Returns:
+        dict or None: The extracted sections as a dictionary, or None if parsing fails.
+    """
+
+    # Use a regular expression to find JSON content in the response
+    json_match = re.search(r'\{.*\}', response, re.DOTALL)
+
+    if json_match:
+
+        # Extract the JSON string from the match
+        json_str = json_match.group(0)
+
+        try:
+            # Parse the JSON string into a dictionary
+            sections = json.loads(json_str)
+            return sections
+        
+        except json.JSONDecodeError:
+
+            # Handle JSON parsing errors
+            print("Failed to parse JSON from extracted content.")
+
+            return None
+        
+    else:
+
+        # Handle the case where no JSON content is found
+        print("No JSON content found in the model's response.")
+
+        return None
+
+
+def identify_sections_with_llama(text):
+
+    """
+    Use the Llama model to identify sections within the text by processing it in chunks.
+
+    Args:
+        text (str): The full text extracted from the PDF.
+
+    Returns:
+        dict: A dictionary with section titles as keys and corresponding text as values.
+    """
+
+    sections = {}  # Initialize a dictionary to store sections
+    max_chunk_size = 3000  # Adjust based on your model's token limit
+
+    # Split the text into chunks to avoid exceeding the model's input limit
+    for i in range(0, len(text), max_chunk_size):
+
+        chunk = text[i:i + max_chunk_size]
+
+        # Construct the prompt for the Llama model
+        prompt = (
+            "Please extract the section titles and their corresponding text from the following content. "
+            "Output the result strictly in JSON format without any additional text or explanations.\n\n"
+            f"Content:\n{chunk}\n\n"
+            "Output format:\n"
+            "{\n"
+            "  \"Section Title\": \"Section Content\",\n"
+            "  ...\n"
+            "}\n"
+        )
+
+        # Send the prompt to the Llama model and get the response
+        response = send_chunk_to_llama_model(prompt)
+
+        # print("Model's Response:")
+        # print(response)
+
+        # Attempt to extract JSON content from the model's response
+        json_start = response.find('{')
+        json_end = response.rfind('}') + 1
+        json_str = response[json_start:json_end]
+
+        try:
+
+            # Parse the JSON string into a dictionary
+            chunk_sections = json.loads(json_str)
+
+            # Update the sections dictionary with the new sections
+            sections.update(chunk_sections)
+
+        except json.JSONDecodeError:
+
+            # Handle JSON parsing errors
+            print("Failed to parse JSON from the model's response.")
+
+            continue
+
+    if not sections:
+
+        print("I couldn't identify any sections. I think I have more work to do.")
+
+    else:
+
+        print("I have successfully identified sections.")
+
+    # Return the dictionary containing all identified sections
+    return sections
+
+
 def select_pdf_file():
 
     """
-    Opens a file dialog for the user to select a PDF file.
-    
+    Open a file dialog for the user to select a PDF file.
+
     Returns:
         str: The path to the selected PDF file.
     """
 
-    # Create a hidden Tkinter root window
+    # Create a hidden root window
     root = tk.Tk()
-    root.withdraw()  # Hide the root window as we only need the file dialog
 
-    # Open a file dialog that allows the user to select a PDF file
+    root.withdraw()  # Hide the root window
+
+    # Open the file dialog to select a PDF file
     pdf_file_path = filedialog.askopenfilename(
         title="Select PDF to Summarize",
-        filetypes=[("PDF Files", "*.pdf")]  # Restrict file selection to PDF files only
+        filetypes=[("PDF Files", "*.pdf")]  # Only allow selection of PDF files
     )
 
-    return pdf_file_path  # Return the selected file path
+    # Return the selected file path
+    return pdf_file_path
 
-# Main function to handle the entire process of PDF extraction and text processing
+
 def main():
 
     """
-    Main function to manage the process of extracting text from a PDF
-    and sending it to the Llama model for summarization.
+    Main function to orchestrate the summarization of a research paper PDF.
     """
 
-    # Step 1: Open a file dialog to allow the user to select a PDF file
+    # Prompt the user to select a PDF file
     pdf_file_path = select_pdf_file()
 
-    # If the user did not select a file, exit the program
     if not pdf_file_path:
-        print("No file selected. Exiting...")
-        return  # Exit if no file is chosen
 
-    # Step 2: Extract the text from the selected PDF file
-    print(f"Extracting text from {pdf_file_path}...")
+        print("No file selected. Exiting...")
+        return
+
+    # Extract text from the selected PDF file
     extracted_text = extract_text_from_pdf(pdf_file_path)
 
-    # Step 3: Split the extracted text into smaller sections to manage token limits
-    text_chunks = split_text_into_chunks(extracted_text)
-    print(f"Split the extracted text into {len(text_chunks)} sections.")
+    # Identify sections within the extracted text using the Llama model
+    sections = identify_sections_with_llama(extracted_text)
 
-    # Step 4: Process each text section individually and accumulate all responses
-    all_text = ""
-    for i, chunk in enumerate(text_chunks):
-        print(f"Reading section {i + 1}...")
-        all_text += chunk  # Combine all sections of text into a single string
+    if not sections:
+        print("I could not identify any sections. Sorry!")
+        return
 
-    # Step 5: Prepare a structured prompt for summarizing the extracted text
-    final_prompt = (
-        f"Summarize the following research paper under these sections:\n\n"
-        f"1. Introduction and Background\n"
-        f"2. Methodology\n"
-        f"3. Results\n"
-        f"4. Discussion and Interpretation\n"
-        f"5. Conclusion and Future Work\n\n"
-        f"----------------------------------\n\n"
-        f"Text:\n{all_text}"
-    )
-    
-    # Step 6: Send the combined text to the Llama model for summarization
-    print("Summarization...")
-    summary = send_chunk_to_llama_model(final_prompt)
-    
-    # Step 7: Print the final summarized output from the model
-    print("\nSummary:\n")
-    print(summary)
+    # Define sections to exclude from summarization
+    sections_to_exclude = ["References", "Work Cited", "Appendix"]
 
-# Entry point of the program
+    # Iterate over each identified section
+    for section, content in sections.items():
+
+        # Check if the section should be excluded
+        if section not in sections_to_exclude:
+
+            print(f"Summarizing section: {section}")
+
+            # Construct the prompt for summarizing the section
+            final_prompt = (
+                "Please summarize the following research paper section. Ignore references and citations.\n\n"
+                f"Section Title: {section}\n\n"
+                f"Section Text: {content}\n\n"
+                "Summary:"
+            )
+
+            # Send the prompt to the Llama model and get the summary
+            summary = send_chunk_to_llama_model(final_prompt)
+
+            # Print the summary for the section
+            print(f"Summary of {section}:\n{summary}\n")
+            print(f"{summary}\n")
+
+
 if __name__ == "__main__":
 
-    # Clear the console screen (compatible with both Windows and Unix-based systems)
+    # Clear the console screen
     os.system('cls' if os.name == 'nt' else 'clear')
 
-    # Call the main function to run the program
+    # Run the main function
     main()
