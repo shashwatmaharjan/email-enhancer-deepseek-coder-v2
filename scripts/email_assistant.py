@@ -1,24 +1,22 @@
 import os
 import subprocess
-import platform
+import tempfile
 
 
 def get_input_email_path():
 
     """
-    Get the path to the 'input.txt' file located in the 'emails' directory.
+    Create a temporary file and return its path.
     """
 
-    # Get the absolute path of the current script
-    current_script_directory = os.path.dirname(os.path.abspath(__file__))
+    # Create a temporary file that won't be deleted upon closing
+    temp_file = tempfile.NamedTemporaryFile(delete=False)
+    temp_file_path = temp_file.name
 
-    # Get the parent directory of the current script directory
-    parent_script_directory = os.path.dirname(current_script_directory)
+    # Close the file so that the text editor can open it
+    temp_file.close()
 
-    # Construct the path to 'emails/input.txt' in the parent directory
-    input_email_path = os.path.join(parent_script_directory, 'emails', 'input.txt')
-
-    return input_email_path
+    return temp_file_path
 
 
 def read_email_body(file_path):
@@ -36,7 +34,7 @@ def read_email_body(file_path):
             email_body = file.read()
 
         return email_body
-    
+
     except Exception as e:
 
         # Print an error message if something goes wrong
@@ -61,7 +59,9 @@ def prepare_email_template(email_body):
     )
 
     # Insert the user's email body into the template
-    return email_template.format(email_body=email_body)
+    formatted_email = email_template.format(email_body=email_body)
+
+    return formatted_email
 
 
 def prepare_final_prompt(email_content):
@@ -71,11 +71,13 @@ def prepare_final_prompt(email_content):
     """
 
     # Define instructions for the Llama model along with the email content
-    final_prompt = (
-        "Please proofread and enhance the following email for grammar, clarity, and professionalism. "
-        "Rewrite it if necessary. Additionally, suggest an appropriate email subject line.\n\n"
-        f"{email_content}"
+    instructions = (
+        "Check for grammar."
+        "Additionally, suggest an appropriate email subject line. Keep the subject line clear, formal, and short.\n\n"
     )
+
+    # Combine instructions and email content to form the final prompt
+    final_prompt = f"{instructions}{email_content}"
 
     return final_prompt
 
@@ -99,13 +101,13 @@ def run_llama_model(prompt, model_name="llama3.2"):
         process = subprocess.Popen(
             command,
             shell=True,
-            stdin=subprocess.PIPE,   # Allow input to the subprocess
-            stdout=subprocess.PIPE,  # Capture the output
-            stderr=subprocess.PIPE,  # Capture any errors
-            text=True                # Use text mode for input/output
+            stdin=subprocess.PIPE,    # Allow input to the subprocess
+            stdout=subprocess.PIPE,   # Capture the output
+            stderr=subprocess.PIPE,   # Capture any errors
+            text=True                 # Use text mode for input/output
         )
 
-        # Communicate the prompt to the subprocess and capture output and errors
+        # Send the prompt to the subprocess and wait for it to finish
         output, error = process.communicate(input=prompt)
 
         # Check if any errors occurred during processing
@@ -114,12 +116,12 @@ def run_llama_model(prompt, model_name="llama3.2"):
             print(f"Sorry, I encountered an error while processing your email: {error}")
 
         return output
-    
+
     except Exception as e:
+
 
         # Handle exceptions that may occur during subprocess execution
         print(f"An error occurred while running the Llama model: {e}")
-
         return ""
 
 
@@ -142,59 +144,46 @@ def open_text_editor(file_path):
         # Prompt the user to press Enter after saving the file
         input("After saving the file, press Enter to continue...")
 
-def clear_input_file(file_path):
+
+def delete_temporary_file(file_path):
 
     """
-    Clear the contents of the specified file.
+    Delete the specified file.
     """
 
     try:
-
-        # Open the file in write mode to overwrite existing content
-        with open(file_path, 'w', encoding='utf-8') as file:
-
-            # Write an empty string to clear the file
-            file.write('')
+        os.remove(file_path)
 
     except Exception as e:
 
-        # Print an error message if unable to clear the file
-        print(f"An error occurred while clearing your draft email: {e}")
+        # Print an error message if unable to delete the file
+        print(f"An error occurred while deleting the temporary file: {e}")
+
 
 def main():
-
     """
     Main function to orchestrate reading the email, processing it, and displaying the output.
     """
 
     # Step 0: Greet the user
-    print("Hello! I'm your personal email assistant. I'm here to help you compose and polish your emails.\n")
+    print("Hi Shashwat! I'm here to help you compose and polish your emails.\n")
 
-    # Step 1: Get the input email path
+    # Step 1: Create a temporary input file
     input_email_path = get_input_email_path()
 
-    # Ensure the 'emails' directory exists
-    os.makedirs(os.path.dirname(input_email_path), exist_ok=True)
-
-    # Ensure the 'input.txt' file exists
-    if not os.path.exists(input_email_path):
-
-        # Create an empty 'input.txt' file if it doesn't exist
-        with open(input_email_path, 'w', encoding='utf-8'):
-
-            pass  # The 'pass' statement does nothing; file creation is enough
-
-    # Step 2: Open 'input.txt' in nano editor and wait until it's closed
+    # Step 2: Open the temporary file in nano editor and wait until it's closed
     open_text_editor(input_email_path)
 
-    # Step 3: Read the email body from 'input.txt'
+    # Step 3: Read the email body from the temporary file
     email_body = read_email_body(input_email_path)
 
     # Check if the email body is empty or contains only whitespace
     if not email_body.strip():
-
         print("Hmm, it seems you didn't enter any content. Please make sure to write your email content.")
-        
+
+        # Delete the temporary file
+        delete_temporary_file(input_email_path)
+
         return  # Exit the main function if no content is found
 
     # Step 4: Prepare the email template
@@ -210,10 +199,20 @@ def main():
     print("---------------------------------------------------------------------------------------------")
     print(output)
 
-    # Step 8: Clear the contents of 'input.txt'
-    clear_input_file(input_email_path)
-    print("I've cleared your draft email from the input file for your privacy.")
+    # Step 8: Delete the temporary input file
+    delete_temporary_file(input_email_path)
+
+    # Inform the user that the draft email has been deleted
+    print("I've deleted your draft email from the input file for your privacy.")
+
+    # Provide final message to the user
     print("Your email is ready! Feel free to copy it to your email client and send it.\n")
 
+
 if __name__ == "__main__":
+
+    # Clear the console screen (compatible with both Windows and Unix-based systems)
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+    # Call the main function to run the program
     main()
