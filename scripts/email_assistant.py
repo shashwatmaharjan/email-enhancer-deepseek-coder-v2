@@ -187,8 +187,6 @@ def main():
             pass  # The 'pass' statement does nothing; file creation is enough
 
     # Step 2: Open 'input.txt' in nano editor and wait until it's closed
-    print(f"Opening '{input_email_path}' in the text editor for you to compose your email.")
-    print("Please write your email content and save the file when you're done.\n")
     open_text_editor(input_email_path)
 
     # Step 3: Read the email body from 'input.txt'
