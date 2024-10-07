@@ -207,7 +207,7 @@ def main():
     output = run_llama_model(final_prompt)
 
     # Step 7: Display the output
-    print("----------------------------------------------------------------------------------------------------")
+    print("---------------------------------------------------------------------------------------------")
     print(output)
 
     # Step 8: Clear the contents of 'input.txt'
