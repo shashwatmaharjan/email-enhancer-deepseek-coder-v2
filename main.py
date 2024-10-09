@@ -72,8 +72,9 @@ def prepare_final_prompt(email_content):
 
     # Define instructions for the Llama model along with the email content
     instructions = (
-        "Check for grammar."
-        "Additionally, suggest an appropriate email subject line. Keep the subject line clear, formal, and short.\n\n"
+        "Check for grammar. Retain the original tone and structure of the email.\n"
+        "Additionally, suggest an appropriate email subject line. Keep the subject line clear and short.\n"
+        "---------------------------------------\n\n"
     )
 
     # Combine instructions and email content to form the final prompt
