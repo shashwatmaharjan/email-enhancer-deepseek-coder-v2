@@ -56,7 +56,7 @@ ollama --version
 
 ### Step 4: Download the `deepseek-v2.5` Model
 
-After setting up ollama, download the gemma:7b model using the following command:
+After setting up ollama, download the deepseek-v2.5 model using the following command:
 
 ```bash
 ollama pull deepseek-v2.5
@@ -123,6 +123,6 @@ Your email is ready! Feel free to copy it to your email client and send it.
 
 ## License
 
-This project is licensed under the MIT License for the code developed in this repository. However, it also incorporates the use of the Gemma model via the `ollama` CLI, which is subject to a separate license. Users are required to follow the licensing terms associated with the Gemma model.
+This project is licensed under the MIT License for the code developed in this repository. However, it also incorporates the use of the Deepseek model via the `ollama` CLI, which is subject to a separate license. Users are required to follow the licensing terms associated with the Deepseek model.
 
-For more information on the Gemma model and its licensing, please refer to the official [Gemma model page on Ollama's website](https://ollama.com/library/gemma).
+For more information on the Deepseek model and its licensing, please refer to the official [Deepseek model page on Ollama's website](https://ollama.com/library/deepseek-v2.5).
