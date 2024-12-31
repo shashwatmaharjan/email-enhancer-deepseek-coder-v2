@@ -83,7 +83,7 @@ def prepare_final_prompt(email_content):
     return final_prompt
 
 
-def run_llama_model(prompt, model_name="gemma:7b"):
+def run_llama_model(prompt, model_name="deepseek-coder-v2:latest"):
 
     """
     Run the Llama model using the provided prompt and return the output.
