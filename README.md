@@ -54,15 +54,15 @@ brew install ollama
 ollama --version
 ```
 
-### Step 4: Download the `gemma:7b` Model
+### Step 4: Download the `deepseek-v2.5` Model
 
 After setting up ollama, download the gemma:7b model using the following command:
 
 ```bash
-ollama pull gemma:7b
+ollama pull deepseek-v2.5
 ```
 
-For more information about this model, you can visit the official [Gemma model page on Ollama's website](https://ollama.com/library/gemma).
+For more information about this model, you can visit the official [Deepseek model page on Ollama's website](https://ollama.com/library/deepseek-v2.5).
 
 ### Step 5: Install `figlet` for ASCII Art (Optional)
 
